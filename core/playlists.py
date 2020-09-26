@@ -66,4 +66,4 @@ class Playlists():
         )
         for row in rows:
             print(row)
-    
+

@@ -56,12 +56,7 @@ async def play(ctx,url=""):
     source = await core.play.parse(url, bot)
     
     await ctx.send(
-        f"""Bernadette ?! Envoie la musique !
-        ```python
-        {source.data}
-        ```
-        """
-        )
+        f"""Bernadette ?! Envoie la musique !""")
     vc.play(source)
 
 @bot.command(pass_context=True)
