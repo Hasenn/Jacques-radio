@@ -6,6 +6,8 @@ import youtube_dl
 
 from discord.ext import commands
 
+
+FS_BASEDIR = "music/"
 # Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -54,13 +56,34 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+class FSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
 
+        self.data = data
+        
+        self.title = data.get('title')
+        self.url = data.get('url')
 
-async def youtube(url, bot):
-    return await YTDLSource.from_url(url, loop=bot.loop,stream=True)
+    @classmethod
+    async def from_name(cls, name, ext):
+        data = {
+            "title": name,
+            "url": f"/{name + ext}"
+        }
+        filename = FS_BASEDIR + name + ext
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
 
 #https://stackoverflow.com/questions/19377262/regex-for-youtube-url#answer-37704433
 YT_PATTERN = r"^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
+async def youtube(url, bot):
+    return await YTDLSource.from_url(url, loop=bot.loop,stream=True)
+FILE_PATTERN = r"^([a-zA-Z0-9_-]+)(\.[a-z0-9]*)?$"
+async def ffile(name, ext, bot):
+    return await FSource.from_name(name,ext)
+
+
 async def parse(url, bot):
     """
     returns an AudioSource based on the url.
@@ -72,8 +95,16 @@ async def parse(url, bot):
         id = m.group(5)
         print(id)
         return await(youtube(url, bot))
+    m = re.match(FILE_PATTERN, url)
+    if m:
+        name = m.group(1)
+        ext = m.group(2)
+        ext = ext if ext else ".mp3"
+        print(name + ext)
+        return await(ffile(name,ext,bot))
+    raise ValueError("Argument doesn't match a valid pattern")
+    
 
-    return await discord.FFmpegOpusAudio.from_probe("testing.mp3")
 
 
 

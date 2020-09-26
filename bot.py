@@ -5,7 +5,7 @@ import youtube_dl
 import os
 import asyncio
 #local imports
-import urlparser
+import core.play
 
 
 
@@ -53,8 +53,15 @@ async def play(ctx,url=""):
     if not(guild.id in voice_clients):
         await join(ctx)
     vc = voice_clients[guild.id]
-    source = await urlparser.parse(url, bot)
-    await ctx.send("Bernadette ?! Envoie la musique !")
+    source = await core.play.parse(url, bot)
+    
+    await ctx.send(
+        f"""Bernadette ?! Envoie la musique !
+        ```python
+        {source.data}
+        ```
+        """
+        )
     vc.play(source)
 
 @bot.command(pass_context=True)
