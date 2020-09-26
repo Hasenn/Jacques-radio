@@ -12,7 +12,8 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
-    'outtmpl': 'tmp/%(id)s_%(title)s.%(ext)s',
+    'outtmpl': 'tmp/%(id)s.%(ext)s',
+    #'outtmpl': 'tmp/%(id)s_%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': True,
     'nocheckcertificate': True,
@@ -46,7 +47,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
             None,
             lambda: ytdl.extract_info(url, download=not stream)
             )
-
         if 'entries' in data:
             # take first item from a playlist
             data = data['entries'][0]
@@ -57,7 +57,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 async def youtube(url, bot):
-    return await YTDLSource.from_url(url, loop=bot.loop)
+    return await YTDLSource.from_url(url, loop=bot.loop,stream=True)
 
 #https://stackoverflow.com/questions/19377262/regex-for-youtube-url#answer-37704433
 YT_PATTERN = r"^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$"
@@ -69,8 +69,10 @@ async def parse(url, bot):
     """
     m = re.match(YT_PATTERN, url)
     if m:
+        id = m.group(5)
+        print(id)
         return await(youtube(url, bot))
-    
+
     return await discord.FFmpegOpusAudio.from_probe("testing.mp3")
 
 

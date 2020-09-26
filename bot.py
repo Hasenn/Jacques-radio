@@ -27,6 +27,10 @@ async def on_command_error(ctx, error):
     await ctx.send(f"```{str(error)}```")
  """
 async def recover():
+    """
+    In case we crashed and still have voice clients,
+    recover them and store them in our dictionnary
+    """
     for client in bot.voice_clients:
         voice_clients[channel.guild.id] = client
 
@@ -50,11 +54,19 @@ async def play(ctx,url=""):
         await join(ctx)
     vc = voice_clients[guild.id]
     source = await urlparser.parse(url, bot)
+    await ctx.send("Bernadette ?! Envoie la musique !")
     vc.play(source)
 
 @bot.command(pass_context=True)
 async def stop(ctx):
-    pass
+    guild = ctx.message.guild
+    vc = voice_clients[guild.id]
+@stop.error
+@leave.error
+async def stop_error(ctx, error):
+    if isinstance(error, KeyError):
+        await ext.send("Not in a voice channel")
+
 
 
 @bot.command(pass_context=True)
