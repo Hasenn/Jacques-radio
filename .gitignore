@@ -2,3 +2,5 @@ __pycache__
 music/*
 *.webm
 *.mp3
+*.pyc
+*.db
